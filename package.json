@@ -1,0 +1,26 @@
+{
+  "name": "simracing-companion",
+  "version": "1.0.0",
+  "description": "Simracing Companion desktop app.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wikti11/Simracing-Companion.git"
+  },
+  "author": "Wiktor Leszczyński",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wikti11/Simracing-Companion/issues"
+  },
+  "homepage": "https://github.com/wikti11/Simracing-Companion#readme",
+  "devDependencies": {
+    "electron": "^31.3.1"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
