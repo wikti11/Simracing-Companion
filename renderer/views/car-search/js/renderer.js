@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(error => console.error('Error loading top-bar:', error));
 
-    fetch('sidebar.html')
+    fetch('..\\static\\sidebar.html')
         .then(response => response.text())
         .then(data => {
             document.getElementById('sidebar-placeholder').innerHTML = data;
