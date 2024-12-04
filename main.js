@@ -15,7 +15,7 @@ const createMainWindow = () => {
 
     mainWindow.setMenu(null);
     mainWindow.maximize();
-    mainWindow.loadFile(path.join(__dirname, './renderer/views/car-search/index.html'));
+    mainWindow.loadFile(path.join(__dirname, './renderer/car-search.html'));
 }
 
 app.whenReady().then(() => {
