@@ -1,0 +1,298 @@
+/* BoP Calculator Styles */
+.calculator-content {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    /* Add scrolling functionality */
+    height: calc(100vh - 150px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Custom scrollbar styling */
+.calculator-content::-webkit-scrollbar {
+    width: 8px; /* Slightly narrower scrollbar */
+}
+
+.calculator-content::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 5px;
+}
+
+.calculator-content::-webkit-scrollbar-thumb {
+    background: #3a3a3a;
+    border-radius: 5px;
+}
+
+.calculator-content::-webkit-scrollbar-thumb:hover {
+    background: #4a4a4a;
+}
+
+/* For Firefox - custom scrollbar */
+@supports (scrollbar-width: thin) {
+    .calculator-content {
+        scrollbar-width: thin;
+        scrollbar-color: #3a3a3a #1a1a1a;
+    }
+}
+
+.calculator-content h1 {
+    margin-top: 0;
+    color: #ffffff;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.description {
+    color: #a0a0a0;
+    margin-bottom: 30px;
+}
+
+.input-section {
+    margin-bottom: 30px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.input-group input[type="number"] {
+    width: 97%;
+    padding: 10px;
+    background-color: #1B1E21;
+    border: 1px solid #3e4248;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.laptime-inputs {
+    display: flex;
+    gap: 5px;
+}
+
+.laptime-input {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+/* Adjust milliseconds field to be slightly smaller */
+.laptime-input:nth-child(3) {
+    flex: 0.8;
+}
+
+.laptime-input input {
+    flex: 1;
+    padding: 10px;
+    background-color: #1B1E21;
+    border: 1px solid #3e4248;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 16px;
+    text-align: center;
+}
+
+.laptime-separator {
+    margin: 0 5px;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.samples-container {
+    background-color: #212121;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.samples-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.samples-header h3 {
+    margin: 0;
+    color: #ffffff;
+    font-weight: normal;
+}
+
+.action-btn {
+    background-color: #3C4146;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    background-color: #5a6779;
+}
+
+.sample-row {
+    background-color: #1B1E21;
+    border-radius: 20px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.sample-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.sample-input {
+    flex: 1;
+}
+
+.sample-input label {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.sample-input input {
+    width: 100%;
+    padding: 10px;
+    background-color: #2C3136;
+    border: 1px solid #3e4248;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.laptime-container {
+    flex: 2;
+}
+
+.sample-laptime {
+    width: 100%;
+}
+
+.sample-actions {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 10px;
+}
+
+.remove-row-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 16px;
+    background-color: #3a3a3a;
+}
+
+button#calculate-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #3C4146;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: background-color 0.2s;
+}
+
+button#calculate-btn:hover {
+    background-color: #5a6779;
+}
+
+.error {
+    color: #ff6b6b;
+    margin-top: 5px;
+    font-size: 14px;
+    display: none;
+}
+
+.results {
+    background-color: #212121;
+    border-radius: 20px;
+    padding: 20px;
+    margin-top: 30px;
+    display: none;
+}
+
+.results h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: normal;
+    color: #ffffff;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 15px;
+    background-color: #3a3a3a;
+    border-radius: 20px;
+}
+
+.result-label {
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.result-value {
+    color: #ffffff;
+}
+
+/* Fix input number spinners in Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Fix input number spinners in Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Making the calculator page responsive */
+@media (max-width: 768px) {
+    .calculator-content {
+        padding: 15px;
+    }
+    
+    .sample-inputs {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .sample-actions {
+        align-items: center;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    .sample-input {
+        width: 100%;
+    }
+}
