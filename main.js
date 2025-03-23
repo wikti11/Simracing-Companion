@@ -1,5 +1,7 @@
-const { BrowserWindow, app } = require('electron');
+const { BrowserWindow, app, ipcMain, shell } = require('electron');
 const path = require('path'); 
+const fs = require('fs');
+const os = require('os');
 
 const createMainWindow = () => {
     const mainWindow = new BrowserWindow({
@@ -33,3 +35,214 @@ app.on('activate', () => {
         createMainWindow();
     }
 });
+
+// Base path for Assetto Corsa cars
+const DEFAULT_CARS_FOLDER = "M:/SteamLibrary/steamapps/common/assettocorsa/content/cars";
+const USER_BRAND_BADGES_PATH = path.join(os.homedir(), 'AppData', 'Local', 'AcTools Content Manager', 'Data (User)', 'Brand Badges');
+const DEFAULT_BRAND_BADGES_PATH = path.join(os.homedir(), 'AppData', 'Local', 'AcTools Content Manager', 'Data', 'Brand Badges');
+
+ipcMain.handle('get-car-data', async (event, carsFolder) => {
+    try {
+        return getCarsData(carsFolder);
+    } catch (error) {
+        console.error('Error loading car data:', error);
+        return [];
+    }
+});
+
+// Add this handler for opening car folders
+ipcMain.handle('open-car-folder', async (event, carId) => {
+    if (!carId) {
+        throw new Error('Car ID is required');
+    }
+    
+    // Use the default cars folder path
+    const carsFolder = DEFAULT_CARS_FOLDER;
+    
+    // Combine with the specific car's ID to get the full path
+    const carPath = path.join(carsFolder, carId);
+    
+    // Check if the folder exists
+    if (!fs.existsSync(carPath)) {
+        throw new Error(`Car folder not found: ${carPath}`);
+    }
+    
+    // Open the folder in the OS file explorer
+    const result = await shell.openPath(carPath);
+    
+    // shell.openPath returns an empty string on success, or an error message
+    if (result !== '') {
+        throw new Error(`Failed to open folder: ${result}`);
+    }
+    
+    return true;
+});
+
+// Window control handlers
+ipcMain.on('close-window', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window) window.close();
+});
+
+ipcMain.on('minimize-window', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window) window.minimize();
+});
+
+ipcMain.on('maximize-window', (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window) {
+        if (window.isMaximized()) {
+            window.unmaximize();
+        } else {
+            window.maximize();
+        }
+    }
+});
+
+function getCarsData(carsFolder) {
+    if (!carsFolder) {
+        carsFolder = DEFAULT_CARS_FOLDER;
+    }
+
+    // Ensure the path is correctly resolved
+    carsFolder = path.resolve(carsFolder);
+
+    const cars = [];
+
+    if (!fs.existsSync(carsFolder)) {
+        console.error(`Cars directory not found: "${carsFolder}"`);
+        return cars;
+    }
+
+    const carFolders = fs.readdirSync(carsFolder, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+
+    carFolders.forEach(carFolder => {
+        const carFolderPath = path.resolve(carsFolder, carFolder); // Ensure proper resolution
+
+        try {
+            const uiCarPath = path.join(carFolderPath, 'ui', 'ui_car.json');
+
+            if (fs.existsSync(uiCarPath)) {
+                const carDataText = fs.readFileSync(uiCarPath, { encoding: 'utf8' });
+                const carData = JSON.parse(carDataText);
+
+                let skins = [];
+                const skinsFolder = path.join(carFolderPath, 'skins');
+
+                if (fs.existsSync(skinsFolder)) {
+                    const skinFolders = fs.readdirSync(skinsFolder, { withFileTypes: true })
+                        .filter(dirent => dirent.isDirectory())
+                        .map(dirent => dirent.name);
+
+                    skinFolders.forEach(skinFolder => {
+                        const skinPath = path.resolve(skinsFolder, skinFolder);
+                        const skinFiles = fs.readdirSync(skinPath);
+
+                        let previewImage = skinFiles.find(file => 
+                            file.toLowerCase().startsWith('preview') && !file.toLowerCase().endsWith('.psd')
+                        );
+
+                        if (previewImage) {
+                            skins.push({
+                                name: skinFolder,
+                                imagePath: path.resolve(skinPath, previewImage) // Always resolve full path
+                            });
+                        }
+                    });
+                }
+
+                let previewImagePath = skins.length > 0 ? skins[0].imagePath : null;
+                const brand = carData.brand || carData.name?.split(' ')[0] || 'Unknown';
+                const brandImagePath = findBrandImage(brand);
+
+                cars.push({
+                    id: carFolder,
+                    name: carData.name || 'Unknown Car',
+                    brand: brand,
+                    class: carData.class || 'Unknown',
+                    specs: carData.specs || {},
+                    year: carData.year || 'Unknown',
+                    tags: carData.tags || [],
+                    imagePath: previewImagePath,
+                    folderName: carFolder,
+                    brandImagePath: brandImagePath,
+                    skins: skins,
+                    totalSkins: skins.length
+                });
+            }
+
+        } catch (error) {
+            console.error(`Error processing car "${carFolder}":`, error);
+        }
+    });
+
+    return cars;
+}
+
+function findBrandImage(brandName) {
+    if (!brandName || brandName === 'Unknown') {
+        return null;
+    }
+   
+    const extensions = ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
+    
+    function findImage(directory, brandName) {
+        if (!fs.existsSync(directory)) return null;
+        
+        // First, try exact match with spaces
+        for (const ext of extensions) {
+            const exactImagePath = path.join(directory, `${brandName}${ext}`);
+            if (fs.existsSync(exactImagePath)) {
+                return exactImagePath;
+            }
+        }
+        
+        try {
+            const files = fs.readdirSync(directory);
+            
+            // Case-insensitive exact match (excluding extensions)
+            const matchingFile = files.find(file => {
+                const fileBaseName = path.parse(file).name.toLowerCase();
+                return fileBaseName === brandName.toLowerCase() && extensions.some(ext => file.toLowerCase().endsWith(ext));
+            });
+            if (matchingFile) return path.join(directory, matchingFile);
+            
+            // Strict partial match: Ensure whole words match, avoiding substring issues (e.g., "BMW Alpina" vs. "BMW")
+            const wordBoundaryMatch = files.find(file => {
+                const fileBaseName = path.parse(file).name.toLowerCase();
+                return fileBaseName.split(/[^a-z0-9]/).join(' ') === brandName.toLowerCase() && extensions.some(ext => file.toLowerCase().endsWith(ext));
+            });
+            if (wordBoundaryMatch) return path.join(directory, wordBoundaryMatch);
+        } catch (error) {
+            console.error(`Error reading directory ${directory}:`, error);
+        }
+        
+        return null;
+    }
+    
+    // Try in user directory first
+    let imagePath = findImage(USER_BRAND_BADGES_PATH, brandName);
+    if (imagePath) return imagePath;
+    
+    // Try in default directory
+    imagePath = findImage(DEFAULT_BRAND_BADGES_PATH, brandName);
+    if (imagePath) return imagePath;
+    
+    // Normalize name
+    const normalizedBrand = brandName.toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^\w-]/g, '')
+        .replace(/[_-]+/g, '_');
+    
+    // Try with normalized name in both directories
+    imagePath = findImage(USER_BRAND_BADGES_PATH, normalizedBrand);
+    if (imagePath) return imagePath;
+    
+    imagePath = findImage(DEFAULT_BRAND_BADGES_PATH, normalizedBrand);
+    if (imagePath) return imagePath;
+    
+    return null;
+}

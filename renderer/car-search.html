@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simracing Companion</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/car-search.css">
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -12,9 +13,51 @@
     <div class="main-container">
         <div id="sidebar-placeholder" class="sidebar"></div>
         <div class="content">
-            <p>This is a simple Electron application.</p>
+            <div class="car-search-content">
+               
+                <!-- Search bar section -->
+                <div class="search-container">
+                    <div class="search-bar">
+                        <input type="text" id="car-search-input" placeholder="Search a car...">
+                        <button id="search-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Filter section -->
+                    <div class="filter-container">
+                        <div class="filter-group">
+                            <select id="year-filter" class="filter-select">
+                                <option value="">All Years</option>
+                                <!-- Year options will be dynamically populated -->
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <select id="class-filter" class="filter-select">
+                                <option value="">All Classes</option>
+                                <!-- Class options will be dynamically populated -->
+                            </select>
+                        </div>
+                        <button id="reset-filters" class="reset-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
+                            Reset
+                        </button>
+                    </div>
+                    <div id="search-results-info"></div>
+                </div>
+                <!-- Car grid section -->
+                <div class="car-grid" id="car-grid">
+                    <!-- Car cards will be dynamically generated here -->
+                </div>
+            </div>
         </div>
     </div>
     <script src="js/renderer.js"></script>
+    <script src="js/car-search.js"></script>
 </body>
 </html>
