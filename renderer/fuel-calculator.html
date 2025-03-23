@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simracing Companion</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/fuel-calculator.css">
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap" rel="stylesheet">
 </head>
+<body>
 <div class="top-bar">
     <div id="top-bar-container">
-        <h1>Upshift Point</h1>     
+        <h1>Fuel Calculator</h1>     
     </div>
 </div>
 <div class="main-container">  
@@ -96,9 +98,75 @@
         </div>
     </div>
     <div class="content">
-        
+        <div id="fuel-calculator-container" class="page-container">
+            <div class="calculator-content">
+                <div class="input-section">
+                    <div class="mode-selector">
+                        <label>Race Mode</label>
+                        <div class="mode-buttons">
+                            <button id="time-mode-btn" class="mode-btn active">TIME</button>
+                            <button id="laps-mode-btn" class="mode-btn">LAPS</button>
+                        </div>
+                    </div>
+                    
+                    <div id="time-input" class="input-group">
+                        <label for="race-time">Race Duration (minutes)</label>
+                        <input type="number" id="race-time" min="1" step="1" placeholder="Enter race time in minutes...">
+                        <div id="race-time-error" class="error">Please enter a valid race duration.</div>
+                    </div>
+                    
+                    <div id="laps-input" class="input-group" style="display: none;">
+                        <label for="race-laps">Race Length (laps)</label>
+                        <input type="number" id="race-laps" min="1" step="1" placeholder="Enter number of laps...">
+                        <div id="race-laps-error" class="error">Please enter a valid number of laps.</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Lap Time</label>
+                        <div class="laptime-inputs">
+                            <div class="laptime-input">
+                                <input type="number" id="laptime-minutes" min="0" max="59" placeholder="min">
+                                <span class="laptime-separator">:</span>
+                            </div>
+                            <div class="laptime-input">
+                                <input type="number" id="laptime-seconds" min="0" max="59" placeholder="sec">
+                                <span class="laptime-separator">.</span>
+                            </div>
+                            <div class="laptime-input">
+                                <input type="number" id="laptime-milliseconds" min="0" max="999" placeholder="ms">
+                            </div>
+                        </div>
+                        <div id="laptime-error" class="error">Please enter a valid lap time.</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="fuel-per-lap">Fuel Consumption (liters per lap)</label>
+                        <input type="text" id="fuel-per-lap" placeholder="Enter fuel per lap (comma separated for multiple values)...">
+                        <div id="fuel-per-lap-error" class="error">Please enter valid fuel consumption values.</div>
+                    </div>
+                    
+                    <button id="calculate-btn">Calculate</button>
+                </div>
+                
+                <div class="results" id="results">
+                    <h2>Fuel Requirements</h2>
+                    <div class="result-item">
+                        <div class="result-label">Race Duration:</div>
+                        <div class="result-value" id="result-race-duration"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Total Laps:</div>
+                        <div class="result-value" id="result-total-laps"></div>
+                    </div>
+                    <div id="fuel-results-container">
+                        <!-- Fuel results will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
     <script src="js/sidebar.js"></script>
+    <script src="js/fuel-calculator.js"></script>
 </body>
 </html>
