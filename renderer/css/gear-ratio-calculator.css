@@ -1,0 +1,93 @@
+/* Gear Ratio Calculator styles */
+
+.calculator-content {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.input-section {
+    margin-bottom: 30px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.input-group input[type="number"] {
+    width: 97%;
+    padding: 10px;
+    background-color: #1B1E21;
+    border: 1px solid #3e4248;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+button#calculate-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #3C4146;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: background-color 0.2s;
+}
+
+button#calculate-btn:hover {
+    background-color: #5a6779;
+}
+
+.error {
+    color: #ff6b6b;
+    margin-top: 5px;
+    font-size: 14px;
+    display: none;
+}
+
+.results {
+    background-color:#212121;
+
+    border-radius: 20px;
+    padding: 20px;
+    display: none;
+}
+
+.results h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: normal;
+    color: #ffffff;
+}
+
+.gear-result {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #3a3a3a;;
+    border-radius: 20px;
+}
+
+.gear-number {
+    font-weight: bold;
+}
+
+/* Making the calculator page responsive */
+@media (max-width: 768px) {
+    .calculator-content {
+        padding: 15px;
+    }
+}
