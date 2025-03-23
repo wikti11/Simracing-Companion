@@ -36,6 +36,22 @@ app.on('activate', () => {
     }
 });
 
+// Navigation handler for sidebar
+ipcMain.on('navigate', (event, pageName) => {
+    const sender = event.sender;
+    const currentWindow = BrowserWindow.fromWebContents(sender);
+    
+    if (currentWindow) {
+        const pagePath = path.join(__dirname, './renderer/', `${pageName}.html`);
+        
+        if (fs.existsSync(pagePath)) {
+            currentWindow.loadFile(pagePath);
+        } else {
+            console.error(`Page not found: ${pagePath}`);
+        }
+    }
+});
+
 // Base path for Assetto Corsa cars
 const DEFAULT_CARS_FOLDER = "M:/SteamLibrary/steamapps/common/assettocorsa/content/cars";
 const USER_BRAND_BADGES_PATH = path.join(os.homedir(), 'AppData', 'Local', 'AcTools Content Manager', 'Data (User)', 'Brand Badges');
