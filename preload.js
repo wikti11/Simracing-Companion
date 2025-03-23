@@ -8,6 +8,10 @@ contextBridge.exposeInMainWorld(
         getCars: (carsFolder) => ipcRenderer.invoke('get-car-data', carsFolder),
         openCarFolder: (carId) => ipcRenderer.invoke('open-car-folder', carId),
        
+        // Track-related methods
+        getTracks: () => ipcRenderer.invoke('get-track-data'),
+        openTrackFolder: (trackPath) => ipcRenderer.invoke('open-track-folder', trackPath),
+
         // Window control methods
         closeWindow: () => ipcRenderer.send('close-window'),
         minimizeWindow: () => ipcRenderer.send('minimize-window'),
@@ -15,5 +19,6 @@ contextBridge.exposeInMainWorld(
         
         // Navigation method for sidebar
         navigateTo: (pageName) => ipcRenderer.send('navigate', pageName)
+
     }
 );

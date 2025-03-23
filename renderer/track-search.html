@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simracing Companion</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/track-search.css">
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap" rel="stylesheet">
 </head>
 <div class="top-bar">
@@ -96,9 +97,50 @@
         </div>
     </div>
     <div class="content">
-        
+        <div class="track-search-content">
+           
+            <!-- Search bar section -->
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" id="track-search-input" placeholder="Search a track...">
+                    <button id="search-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+                <!-- Filter section -->
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <select id="year-filter" class="filter-select">
+                            <option value="">All Years</option>
+                            <!-- Year options will be dynamically populated -->
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select id="country-filter" class="filter-select">
+                            <option value="">All Countries</option>
+                            <!-- Class options will be dynamically populated -->
+                        </select>
+                    </div>
+                    <button id="reset-filters" class="reset-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                            <path d="M3 3v5h5"></path>
+                        </svg>
+                        Reset
+                    </button>
+                </div>
+                <div id="search-results-info"></div>
+            </div>
+            <!-- Track grid section -->
+            <div class="track-grid" id="track-grid">
+                <!-- Track cards will be dynamically generated here -->
+            </div>
+        </div>
     </div>
 </div>
-    <script src="js/sidebar.js"></script>
-</body>
+<script src="js/track-search.js"></script>
+<script src="js/sidebar.js"></script>
 </html>
