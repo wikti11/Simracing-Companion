@@ -5,6 +5,18 @@
     margin: 0 auto;
 }
 
+.calculator-content h1 {
+    margin-top: 0;
+    color: #ffffff;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+.description {
+    color: #a0a0a0;
+    margin-bottom: 30px;
+}
+
 .input-section {
     margin-bottom: 30px;
 }
