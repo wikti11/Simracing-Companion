@@ -18,7 +18,13 @@ contextBridge.exposeInMainWorld(
         maximizeWindow: () => ipcRenderer.send('maximize-window'),
         
         // Navigation method for sidebar
-        navigateTo: (pageName) => ipcRenderer.send('navigate', pageName)
+        navigateTo: (pageName) => ipcRenderer.send('navigate', pageName),
+
+        // Settings
+        getSettings: () => ipcRenderer.invoke('getSettings'),
+        saveSettings: (settings) => ipcRenderer.invoke('saveSettings', settings),
+        showOpenDialog: () => ipcRenderer.invoke('showOpenDialog'),
+        
 
     }
 );

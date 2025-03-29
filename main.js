@@ -1,7 +1,42 @@
-const { BrowserWindow, app, ipcMain, shell } = require('electron');
+const { BrowserWindow, app, ipcMain, shell, dialog } = require('electron');
 const path = require('path'); 
 const fs = require('fs');
 const os = require('os');
+
+// Settings storage path
+const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');
+
+// Settings object
+let appSettings = {};
+
+// Load settings at startup
+function loadSettings() {
+    try {
+        if (fs.existsSync(SETTINGS_PATH)) {
+            const data = fs.readFileSync(SETTINGS_PATH, 'utf8');
+            appSettings = JSON.parse(data);
+        } else {
+            // Create empty settings file if it doesn't exist
+            saveSettings(appSettings);
+        }
+    } catch (error) {
+        console.error('Error loading settings:', error);
+    }
+    return appSettings;
+}
+
+// Save settings to file
+function saveSettings(settings) {
+    try {
+        fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2), 'utf8');
+        appSettings = settings;
+    } catch (error) {
+        console.error('Error saving settings:', error);
+    }
+}
+
+// Initialize settings
+loadSettings();
 
 const createMainWindow = () => {
     const mainWindow = new BrowserWindow({
@@ -52,15 +87,73 @@ ipcMain.on('navigate', (event, pageName) => {
     }
 });
 
-// Base path for Assetto Corsa cars
-const DEFAULT_CARS_FOLDER = "M:/SteamLibrary/steamapps/common/assettocorsa/content/cars";
-const DEFAULT_TRACKS_FOLDER = "M:/SteamLibrary/steamapps/common/assettocorsa/content/tracks";
+// Get car and track paths based on settings
+function getCarPath() {
+    if (!appSettings.acPath) {
+        return null;
+    }
+    return path.join(appSettings.acPath, 'content/cars');
+}
+
+function getTrackPath() {
+    if (!appSettings.acPath) {
+        return null;
+    }
+    return path.join(appSettings.acPath, 'content/tracks');
+}
+
+// Get settings - changed to camelCase to match frontend expectations
+ipcMain.handle('getSettings', async () => {
+    return appSettings;
+});
+
+// Save settings - changed to camelCase to match frontend expectations
+ipcMain.handle('saveSettings', async (event, settings) => {
+    saveSettings(settings);
+    return true;
+});
+
+// Show directory selection dialog - changed to camelCase to match frontend expectations
+ipcMain.handle('showOpenDialog', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openDirectory'],
+        title: 'Select Assetto Corsa Installation Directory'
+    });
+    return result;
+});
+
+// Keep backward compatibility with kebab-case for any potential existing code
+ipcMain.handle('get-settings', async () => {
+    return appSettings;
+});
+
+ipcMain.handle('save-settings', async (event, settings) => {
+    saveSettings(settings);
+    return true;
+});
+
+ipcMain.handle('show-open-dialog', async () => {
+    const result = await dialog.showOpenDialog({
+        properties: ['openDirectory'],
+        title: 'Select Assetto Corsa Installation Directory'
+    });
+    return result;
+});
+
+// Base path for Assetto Corsa cars and tracks
 const USER_BRAND_BADGES_PATH = path.join(os.homedir(), 'AppData', 'Local', 'AcTools Content Manager', 'Data (User)', 'Brand Badges');
 const DEFAULT_BRAND_BADGES_PATH = path.join(os.homedir(), 'AppData', 'Local', 'AcTools Content Manager', 'Data', 'Brand Badges');
 
 ipcMain.handle('get-car-data', async (event, carsFolder) => {
     try {
-        return getCarsData(carsFolder);
+        // Use the path from settings only
+        const folderToUse = getCarPath();
+        
+        if (!folderToUse) {
+            throw new Error('Assetto Corsa path not configured in settings');
+        }
+        
+        return getCarsData(folderToUse);
     } catch (error) {
         console.error('Error loading car data:', error);
         return [];
@@ -73,8 +166,12 @@ ipcMain.handle('open-car-folder', async (event, carId) => {
         throw new Error('Car ID is required');
     }
     
-    // Use the default cars folder path
-    const carsFolder = DEFAULT_CARS_FOLDER;
+    // Use the path from settings
+    const carsFolder = getCarPath();
+    
+    if (!carsFolder) {
+        throw new Error('Assetto Corsa path not configured in settings');
+    }
     
     // Combine with the specific car's ID to get the full path
     const carPath = path.join(carsFolder, carId);
@@ -118,10 +215,6 @@ ipcMain.on('maximize-window', (event) => {
 });
 
 function getCarsData(carsFolder) {
-    if (!carsFolder) {
-        carsFolder = DEFAULT_CARS_FOLDER;
-    }
-
     // Ensure the path is correctly resolved
     carsFolder = path.resolve(carsFolder);
 
@@ -267,7 +360,14 @@ function findBrandImage(brandName) {
 // Add this handler for getting track data
 ipcMain.handle('get-track-data', async (event, tracksFolder) => {
     try {
-        return getTracksData(tracksFolder);
+        // Use only the path from settings
+        const folderToUse = getTrackPath();
+        
+        if (!folderToUse) {
+            throw new Error('Assetto Corsa path not configured in settings');
+        }
+        
+        return getTracksData(folderToUse);
     } catch (error) {
         console.error('Error loading track data:', error);
         return [];
@@ -297,10 +397,6 @@ ipcMain.handle('open-track-folder', async (event, trackPath) => {
 });
 
 function getTracksData(tracksFolder) {
-    if (!tracksFolder) {
-        tracksFolder = DEFAULT_TRACKS_FOLDER;
-    }
-
     // Ensure the path is correctly resolved
     tracksFolder = path.resolve(tracksFolder);
 
