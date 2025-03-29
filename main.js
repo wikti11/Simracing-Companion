@@ -214,6 +214,163 @@ ipcMain.on('maximize-window', (event) => {
     }
 });
 
+// Function to sanitize JSON text with unescaped line breaks and HTML tags
+function sanitizeJsonText(text) {
+    try {
+        // First, try regular JSON parsing - if it works, return the parsed object
+        return JSON.parse(text);
+    } catch (error) {
+        console.debug('Basic JSON parsing failed, attempting to fix malformed JSON...');
+        
+        try {
+            // Method 1: Fix newlines inside string values
+            // This finds all strings with unescaped newlines and escapes them
+            let fixedText = text.replace(/("(?:[^"\\]|\\.)*")|[\n\r]+/g, (match, group) => {
+                // If we matched a string (group is defined), return it unchanged
+                // Otherwise, replace newlines with space
+                return group || ' ';
+            });
+            
+            return JSON.parse(fixedText);
+        } catch (error2) {
+            console.debug('First repair method failed, trying more aggressive approach...');
+            
+            try {
+                // Method 2: More aggressive - treat everything between description quotes as a single string
+                // Find the description field and fix it - match from "description": " to the next "
+                let fixedText = text.replace(/"description"\s*:\s*"([\s\S]*?)(?:"(?=\s*,|\s*}))/g, (match, content) => {
+                    // Escape all newlines and quotes in the content
+                    let sanitizedContent = content
+                        .replace(/\\/g, '\\\\') // Double escape existing backslashes
+                        .replace(/\n/g, '\\n')  // Escape newlines
+                        .replace(/\r/g, '\\r')  // Escape carriage returns
+                        .replace(/"/g, '\\"');  // Escape quotes that aren't already escaped
+                    
+                    return `"description":"${sanitizedContent}"`;
+                });
+                
+                return JSON.parse(fixedText);
+            } catch (error3) {
+                console.debug('Second repair method failed, trying restructuring approach...');
+                
+                try {
+                    // Method 3: Manual structure rebuild
+                    // First, let's extract what seems to be the start of a valid JSON object
+                    const startBraceMatch = text.match(/^\s*\{/);
+                    const endBraceMatch = text.match(/\}\s*$/);
+                    
+                    if (!startBraceMatch || !endBraceMatch) {
+                        console.error('JSON is severely malformed (missing braces)');
+                        throw new Error('JSON is severely malformed');
+                    }
+
+                    // Split by potential property boundaries
+                    let segments = text.split(/,\s*(?=")/);
+                    let rebuiltObject = {};
+                    
+                    for (let segment of segments) {
+                        // Try to extract key-value pairs
+                        let match = segment.match(/"\s*([^"]+)\s*"\s*:\s*(.+)/s);
+                        if (match) {
+                            let key = match[1].trim();
+                            let value = match[2].trim();
+                            
+                            // Handle different value types
+                            if (value.startsWith('"') && value.includes('\n')) {
+                                // Multiline string
+                                // Find the closing quote that's either followed by a comma or the end brace
+                                const valueEndMatches = value.match(/"(?=\s*$|\s*,|\s*\})/g);
+                                if (valueEndMatches && valueEndMatches.length > 0) {
+                                    const lastIndex = value.lastIndexOf(valueEndMatches[valueEndMatches.length - 1]);
+                                    if (lastIndex > 0) {
+                                        value = value.substring(0, lastIndex + 1);
+                                        // Now properly escape the content
+                                        value = value.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+                                    }
+                                }
+                            }
+                            
+                            try {
+                                // Try to parse the value
+                                rebuiltObject[key] = JSON.parse(value);
+                            } catch (e) {
+                                // If it's a string but couldn't be parsed, wrap it properly
+                                if (value.startsWith('"')) {
+                                    value = value.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+                                    try {
+                                        rebuiltObject[key] = JSON.parse(value);
+                                    } catch (e2) {
+                                        console.warn(`Could not parse value for key "${key}": ${value.substring(0, 50)}...`);
+                                        rebuiltObject[key] = value.replace(/"/g, '');
+                                    }
+                                } else {
+                                    // Handle non-string values like arrays or objects
+                                    try {
+                                        if (value.match(/^\s*\[.*\]\s*$/s)) {
+                                            // It's an array - try to clean it
+                                            let cleanArray = value.replace(/\n/g, ' ').replace(/\r/g, ' ');
+                                            rebuiltObject[key] = JSON.parse(cleanArray);
+                                        } else {
+                                            rebuiltObject[key] = value;
+                                        }
+                                    } catch (e3) {
+                                        console.warn(`Could not parse complex value for key "${key}"`);
+                                        rebuiltObject[key] = null;
+                                    }
+                                }
+                            }
+                        } else if (segment.includes('{')) {
+                            // This might be the start of the object with potential metadata
+                            try {
+                                const firstProperty = segment.match(/\{\s*"([^"]+)"\s*:\s*(.+)/s);
+                                if (firstProperty) {
+                                    let key = firstProperty[1].trim();
+                                    let value = firstProperty[2].trim();
+                                    
+                                    // Parse as above
+                                    try {
+                                        rebuiltObject[key] = JSON.parse(value);
+                                    } catch (e) {
+                                        // Simplified handling
+                                        rebuiltObject[key] = value.replace(/"/g, '');
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('Could not parse first segment of JSON');
+                            }
+                        }
+                    }
+                    
+                    return rebuiltObject;
+                } catch (error4) {
+                    console.error('All JSON repair methods failed for:', text.substring(0, 200) + '...');
+                    
+                    // Final fallback - try to extract at least the name and basic info
+                    try {
+                        const nameMatch = text.match(/"name"\s*:\s*"([^"]+)"/);
+                        const brandMatch = text.match(/"brand"\s*:\s*"([^"]+)"/);
+                        
+                        let fallbackObject = {
+                            name: nameMatch ? nameMatch[1] : 'Unknown',
+                            brand: brandMatch ? brandMatch[1] : 'Unknown',
+                            description: '*** Error parsing description ***',
+                            class: 'Unknown',
+                            specs: {},
+                            tags: []
+                        };
+                        
+                        console.warn('Using fallback object with minimal data');
+                        return fallbackObject;
+                    } catch (finalError) {
+                        // If absolutely nothing works, throw the original error
+                        throw error;
+                    }
+                }
+            }
+        }
+    }
+}
+
 function getCarsData(carsFolder) {
     // Ensure the path is correctly resolved
     carsFolder = path.resolve(carsFolder);
@@ -237,7 +394,17 @@ function getCarsData(carsFolder) {
 
             if (fs.existsSync(uiCarPath)) {
                 const carDataText = fs.readFileSync(uiCarPath, { encoding: 'utf8' });
-                const carData = JSON.parse(carDataText);
+                
+                // Use the sanitized JSON parser
+                let carData;
+                try {
+                    carData = sanitizeJsonText(carDataText);
+                } catch (error) {
+                    console.error(`Failed to parse car data for "${carFolder}":`, error);
+                    console.error('First 100 chars of problematic JSON:', carDataText.substring(0, 100));
+                    // Continue with next car instead of failing
+                    return;
+                }
 
                 let skins = [];
                 const skinsFolder = path.join(carFolderPath, 'skins');
@@ -465,7 +632,17 @@ function getTracksData(tracksFolder) {
 function processTrackData(uiTrackPath, trackFolder, layoutFolder, tracks) {
     try {
         const trackDataText = fs.readFileSync(uiTrackPath, { encoding: 'utf8' });
-        const trackData = JSON.parse(trackDataText);
+        
+        // Use the sanitized JSON parser
+        let trackData;
+        try {
+            trackData = sanitizeJsonText(trackDataText);
+        } catch (error) {
+            console.error(`Failed to parse track data for "${trackFolder}${layoutFolder ? ` - ${layoutFolder}` : ''}":`, error);
+            console.error('First 100 chars of problematic JSON:', trackDataText.substring(0, 100));
+            // Continue with next track instead of failing completely
+            return;
+        }
         
         // Determine the path where outline.png should be located
         let outlinePath = null;
