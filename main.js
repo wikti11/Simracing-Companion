@@ -220,7 +220,7 @@ function sanitizeJsonText(text) {
         // First, try regular JSON parsing - if it works, return the parsed object
         return JSON.parse(text);
     } catch (error) {
-        console.debug('Basic JSON parsing failed, attempting to fix malformed JSON...');
+        // console.debug('Basic JSON parsing failed, attempting to fix malformed JSON...');
         
         try {
             // Method 1: Fix newlines inside string values
@@ -233,7 +233,7 @@ function sanitizeJsonText(text) {
             
             return JSON.parse(fixedText);
         } catch (error2) {
-            console.debug('First repair method failed, trying more aggressive approach...');
+            // console.debug('First repair method failed, trying more aggressive approach...');
             
             try {
                 // Method 2: More aggressive - treat everything between description quotes as a single string
@@ -251,7 +251,7 @@ function sanitizeJsonText(text) {
                 
                 return JSON.parse(fixedText);
             } catch (error3) {
-                console.debug('Second repair method failed, trying restructuring approach...');
+                // console.debug('Second repair method failed, trying restructuring approach...');
                 
                 try {
                     // Method 3: Manual structure rebuild
@@ -300,7 +300,7 @@ function sanitizeJsonText(text) {
                                     try {
                                         rebuiltObject[key] = JSON.parse(value);
                                     } catch (e2) {
-                                        console.warn(`Could not parse value for key "${key}": ${value.substring(0, 50)}...`);
+                                        // console.warn(`Could not parse value for key "${key}": ${value.substring(0, 50)}...`);
                                         rebuiltObject[key] = value.replace(/"/g, '');
                                     }
                                 } else {
@@ -314,7 +314,7 @@ function sanitizeJsonText(text) {
                                             rebuiltObject[key] = value;
                                         }
                                     } catch (e3) {
-                                        console.warn(`Could not parse complex value for key "${key}"`);
+                                        // console.warn(`Could not parse complex value for key "${key}"`);
                                         rebuiltObject[key] = null;
                                     }
                                 }
@@ -336,7 +336,7 @@ function sanitizeJsonText(text) {
                                     }
                                 }
                             } catch (e) {
-                                console.warn('Could not parse first segment of JSON');
+                                // console.warn('Could not parse first segment of JSON');
                             }
                         }
                     }
